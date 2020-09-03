@@ -1,5 +1,3 @@
-from getpass import getpass
-
 from Adapter import Adapter
 from IMAP import ImapSSL, State
 
@@ -28,7 +26,6 @@ class Client:
             email = input()
             print()
             print('Введите пароль')
-            # password = getpass()
             password = input()
             print()
             print('Подключение...')
@@ -39,13 +36,13 @@ class Client:
                 self.imap.state = State.SELECT.value
             else:
                 print()
-                print('Неверные данные. Проверьте правильность')
+                print('Неверные данные. Попробуйте еще раз')
                 print()
         print()
         print('Logined')
         print('---------------------')
 
-    def work(self, adapter):
+    def work(self, adapter: type(Adapter)):
         while self.imap.state != 'EXIT':
             while self.imap.state == 'SELECT':
                 self.selected()
@@ -67,7 +64,7 @@ class Client:
         print('Selected')
         print('---------------------')
 
-    def command_handler(self, adapter):
+    def command_handler(self, adapter: type(Adapter)):
         print('Что будем делать?)')
         print()
         command = input()

@@ -1,3 +1,6 @@
+from IMAP import ImapSSL
+
+
 def print_help():
     help = 'login *email* *password* - авторизация\n' \
            '\n' \
@@ -24,40 +27,34 @@ def print_help():
 
 
 class Adapter:
-    def adapt(self, imap, command):
+    def adapt(self, imap: type(ImapSSL), command: str):
+        commands = {
+            'select': lambda com: imap.select(com[1]),
+            'close': lambda com: imap.close_mailbox(),
+            'status': lambda com: imap.get_status_mailbox(com[1], com[2:]),
+            'delete': lambda com: imap.delete_check_mails(),
+            'search': lambda com: imap.search_mail(com[1:]),
+            'flag': lambda com: flag_operations[com[1]](com),
+            'fetch': lambda com: imap.fetch(com[1], com[2:]),
+            'date': lambda com: imap.get_date(com[1]),
+            'text': lambda com: imap.get_text(com[1]),
+            'subject': lambda com: imap.get_subject(com[1]),
+            'message': lambda com: imap.get_message(com[1]),
+            'logout': lambda com: imap.logout(),
+            'help': lambda com: print_help(),
+        }
+
+        flag_operations = {
+            'del': lambda com: imap.del_flag_mail(com[2], com[3:]),
+            'add': lambda com: imap.add_flag_mail(com[2], com[3:]),
+            'change': lambda com: imap.change_flag_mail(com[2], com[3:])
+        }
+
         com = command.split(' ')
-        if com[0] == 'select':
-            log = imap.select(com[1])
-        elif com[0] == 'close':
-            log = imap.close_mailbox()
-        elif com[0] == 'status':
-            log = imap.get_status_mailbox(com[1], com[2:])
-        elif com[0] == 'delete':
-            log = imap.delete_check_mails()
-        elif com[0] == 'search':
-            log = imap.search_mail(com[1:])
-        elif com[0] == 'flag':
-            if com[1] == 'del':
-                log = imap.del_flag_mail(com[2], com[3:])
-            elif com[1] == 'add':
-                log = imap.add_flag_mail(com[2], com[3:])
-            elif com[1] == 'change':
-                log = imap.change_flag_mail(com[2], com[3:])
-        elif com[0] == 'fetch':
-            log = imap.fetch(com[1], com[2:])
-        elif com[0] == 'date':
-            log, data = imap.get_date(com[1])
-        elif com[0] == 'text':
-            log = imap.get_text(com[1])
-        elif com[0] == 'subject':
-            log = imap.get_subject(com[1])
-        elif com[0] == 'message':
-            log = imap.get_message(com[1])
-        elif com[0] == 'logout':
-            log = imap.logout()
-        elif com[0] == 'help':
-            log = print_help()
-        else:
+        
+        try:
+            log = commands[com[0]](com)
+        except KeyError:
             log = 'Неверная команда, напишите help, для получения справки'
 
         return log
